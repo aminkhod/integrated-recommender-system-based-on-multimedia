@@ -25,7 +25,7 @@ from ...exception import ScoreException
 from ...utils import get_rng
 from ...utils.fast_sparse_funcs import inplace_csr_row_normalize_l2
 from cornac.models.knn.similarity import compute_similarity, compute_score, compute_score_single
-
+from x import *
  
 
 EPS = 1e-8

@@ -18,7 +18,7 @@ import cornac
 from cornac.datasets import movielens
 from cornac.eval_methods import RatioSplit
 from cornac.eval_methods import CrossValidation
-
+import numpy as np
 
 K = 60  # number of nearest neighbors
 
@@ -30,54 +30,54 @@ feedback = movielens.load_feedback(variant="100K")
 #ratio_split = RatioSplit(
 #    data=feedback, test_size=0.2, exclude_unknowns=True, verbose=True, seed=123
 #)
+for se in np.random.randint(1,100,10):
+    cross_validation = CrossValidation(
+        data=feedback,
+        n_folds=5,
+      #  rating_threshold=0.5,
+        partition=None,
+        seed=se,
+        exclude_unknowns=True,
+        verbose=True,
+        #item_image=item_image_modality
+    )
 
-cross_validation = CrossValidation(
-    data=feedback,
-    n_folds=5,
-  #  rating_threshold=0.5,
-    partition=None,
-    seed=123,
-    exclude_unknowns=True,
-    verbose=True,
-    #item_image=item_image_modality
-)
+    # UserKNN methods
+    user_knn_cosine = cornac.models.UserKNN(k=K, similarity="cosine", name="UserKNN-Cosine")
+    user_knn_pearson = cornac.models.UserKNN(
+        k=K, similarity="pearson", name="UserKNN-Pearson"
+    )
+    user_knn_amp = cornac.models.UserKNN(
+        k=K, similarity="cosine", amplify=2.0, name="UserKNN-Amplified"
+    )
+    user_knn_idf = cornac.models.UserKNN(
+        k=K, similarity="cosine", weighting="idf", name="UserKNN-IDF"
+    )
+    user_knn_bm25 = cornac.models.UserKNN(
+        k=K, similarity="cosine", weighting="bm25", name="UserKNN-BM25"
+    )
+    # ItemKNN methods
+    item_knn_cosine = cornac.models.ItemKNN(k=K, similarity="cosine", name="ItemKNN-Cosine")
+    item_knn_pearson = cornac.models.ItemKNN(
+        k=K, similarity="pearson", name="ItemKNN-Pearson"
+    )
+    item_knn_adjusted = cornac.models.ItemKNN(
+        k=K, similarity="cosine", mean_centered=True, name="ItemKNN-AdjustedCosine"
+    )
 
-# UserKNN methods
-user_knn_cosine = cornac.models.UserKNN(k=K, similarity="cosine", name="UserKNN-Cosine")
-user_knn_pearson = cornac.models.UserKNN(
-    k=K, similarity="pearson", name="UserKNN-Pearson"
-)
-user_knn_amp = cornac.models.UserKNN(
-    k=K, similarity="cosine", amplify=2.0, name="UserKNN-Amplified"
-)
-user_knn_idf = cornac.models.UserKNN(
-    k=K, similarity="cosine", weighting="idf", name="UserKNN-IDF"
-)
-user_knn_bm25 = cornac.models.UserKNN(
-    k=K, similarity="cosine", weighting="bm25", name="UserKNN-BM25"
-)
-# ItemKNN methods
-item_knn_cosine = cornac.models.ItemKNN(k=K, similarity="cosine", name="ItemKNN-Cosine")
-item_knn_pearson = cornac.models.ItemKNN(
-    k=K, similarity="pearson", name="ItemKNN-Pearson"
-)
-item_knn_adjusted = cornac.models.ItemKNN(
-    k=K, similarity="cosine", mean_centered=True, name="ItemKNN-AdjustedCosine"
-)
-
-# Put everything together into an experiment
-cornac.Experiment(
-    eval_method=cross_validation,
-    models=[
-       # user_knn_cosine,
-       # user_knn_pearson,
-       # user_knn_amp,
-       # user_knn_idf,
-       # user_knn_bm25,
-       # item_knn_cosine,
-       #item_knn_pearson,
-        item_knn_adjusted,
-    ],
-    metrics=[cornac.metrics.RMSE(),cornac.metrics.MAE()],
-    user_based=True,
-).run()
+    # Put everything together into an experiment
+    cornac.Experiment(
+        eval_method=cross_validation,
+        models=[
+           # user_knn_cosine,
+           # user_knn_pearson,
+           # user_knn_amp,
+           # user_knn_idf,
+           # user_knn_bm25,
+           # item_knn_cosine,
+           #item_knn_pearson,
+            item_knn_adjusted,
+        ],
+        metrics=[cornac.metrics.RMSE(),cornac.metrics.MAE()],
+        user_based=True,
+    ).run()
